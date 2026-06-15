@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en" data-deck="true-cost-ai-token" data-version="2">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The true cost of an AI token — water, energy, hardware and capital</title>
+<meta name="description" content="A verifiable presentation on the physical and financial cost of generative AI: water, electricity, e-waste, land, cooling and economics. Light theme, printable, with primary sources.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SECTION: DESIGN TOKENS — light editorial (AI cost deck)
+   Layers: HEX fallback → OKLCH override → semantic.
+   Category accents: water=blue · energy=amber · e-waste=teal
+   · land=violet · cooling=cyan · economics=red.
+   ============================================================ */
+:root{
+  --display:"Barlow Condensed",Impact,sans-serif;
+  --font:"Lora",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+
+  --bg:#FFFFFF; --bg-2:#F8FAFC; --band:#F1F5F9; --card:#FFFFFF; --card-2:#FCFDFE;
+  --line:#E2E8F0; --ink:#0F172A; --body:#334155; --muted:#64748B;
+
+  /* semantic palette per category (fixed; the switcher doesn't touch it) */
+  --water:#2563EB;  --water-soft:#E5EDFD;
+  --energy:#B45309; --energy-soft:#F6ECD8;
+  --ewaste:#0E7490; --ewaste-soft:#DBF0F4;
+  --space:#7C3AED;  --space-soft:#EDE6FB;
+  --cool:#0891B2;   --cool-soft:#D9F0F6;
+  --econ:#DC2626;   --econ-soft:#FBE4E4;
+  --green:#15803D;  --green-soft:#DCF1E3;
+
+  --accent:#0EA5E9; --accent-soft:#E0F2FE;
+  --shadow:0 1px 3px rgba(15,23,42,.05),0 8px 24px rgba(15,23,42,.05);
+  --radius:12px;
+}
+@supports (color: oklch(50% 0.1 230)){
+  :root{
+    --bg:#fff; --bg-2:oklch(98.2% 0.005 250); --band:oklch(96% 0.008 250);
+    --card-2:oklch(99% 0.003 250); --line:oklch(91% 0.012 250);
+    --ink:oklch(22% 0.03 260); --body:oklch(40% 0.025 255); --muted:oklch(56% 0.02 255);
+  }
+}
+@supports (color: oklch(from red l c h)){
+  :root{
+    --water-h:oklch(from var(--water) calc(l - 0.07) c h);
+    --econ-h:oklch(from var(--econ) calc(l - 0.07) c h);
+  }
+}
+
+/* ============================================================
+   SECTION: BASE
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--body);font-family:var(--font);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1060px;margin:0 auto;padding:clamp(1rem,3.5vw,2.8rem)}
+section{margin-top:clamp(3rem,6vw,4.8rem);scroll-margin-top:74px;position:relative}
+section.band{padding-block:clamp(2rem,4vw,3rem)}
+section.band::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:var(--band);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+h2{font-family:var(--display);font-size:clamp(1.6rem,3.4vw,2.3rem);font-weight:600;color:var(--ink);letter-spacing:-.01em;line-height:1.12;position:relative;padding-bottom:.6rem;margin-bottom:.7rem}
+h2::after{content:"";position:absolute;left:0;bottom:0;width:2.6rem;height:3px;border-radius:2px;background:var(--cat,var(--accent))}
+h3{font-family:var(--display);font-size:clamp(1.15rem,2.2vw,1.4rem);font-weight:600;color:var(--ink);margin:1.8rem 0 .6rem}
+h4{font-family:var(--display);font-size:1.05rem;font-weight:600;color:var(--ink);margin:.2rem 0 .3rem}
+p{max-width:70ch}p+p{margin-top:.9rem}
+strong{color:var(--ink);font-weight:600}
+em{color:var(--cat,var(--accent));font-style:normal;font-weight:600}
+a{color:var(--water)}a:hover{color:var(--water-h,var(--water))}
+ul,ol{margin:.8rem 0 .8rem 1.2rem}li{margin:.3rem 0;max-width:68ch}
+:focus-visible{outline:3px solid var(--water);outline-offset:2px;border-radius:4px}
+
+/* editorial eyebrow with a category-colored dot */
+.k{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cat,var(--accent));font-weight:600;margin-bottom:.7rem}
+.k::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cat,var(--accent));margin-right:.55rem;vertical-align:middle;transform:translateY(-2px)}
+.sec-intro{font-size:1.13rem;line-height:1.62;color:var(--body);max-width:70ch}
+.sec-intro strong{color:var(--ink)}
+
+/* ============================================================
+   SECTION: TOP NAV (sticky, scroll-spy aria-current) + progress
+   ============================================================ */
+#prog{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:60}
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in oklab,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1060px;margin:0 auto;display:flex;align-items:center;gap:.4rem;padding:.5rem clamp(1rem,3.5vw,2.8rem)}
+.topbar .brand{font-family:var(--display);font-weight:700;color:var(--ink);font-size:.92rem;white-space:nowrap;flex-shrink:0}
+.navlinks{display:flex;align-items:center;gap:.1rem;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0}
+.navlinks::-webkit-scrollbar{display:none}
+.topbar a{color:var(--muted);text-decoration:none;font-size:.79rem;font-weight:600;padding:.3rem .5rem;border-radius:7px;white-space:nowrap;transition:.15s}
+.topbar a:hover{color:var(--ink);background:var(--bg-2)}
+.topbar a[aria-current="true"]{color:var(--accent);background:var(--accent-soft)}
+.topbar .src-cta{color:#fff;background:var(--ink);flex-shrink:0;margin-left:.2rem}
+.topbar .src-cta:hover{background:var(--ink);color:#fff;opacity:.9}
+.topbar .lang{border:1px solid var(--line);color:var(--muted);flex-shrink:0}
+.topbar .lang:hover{color:var(--ink);background:var(--bg-2)}
+
+/* ============================================================
+   SECTION: HERO
+   ============================================================ */
+.hero{padding:clamp(2rem,6vw,4rem) 0 0}
+.hero .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--econ);font-weight:600}
+.hero .eyebrow::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--econ);margin-right:.55rem;vertical-align:middle;transform:translateY(-1px)}
+.hero h1{font-family:var(--display);font-weight:600;font-size:clamp(2.1rem,6vw,3.9rem);line-height:1.04;color:var(--ink);letter-spacing:-.02em;margin:.7rem 0 .5rem;max-width:18ch}
+.hero .sub{font-family:var(--display);font-weight:500;font-size:clamp(1.05rem,2.4vw,1.4rem);color:var(--muted);margin-bottom:1.6rem;max-width:48ch}
+.keystone{border-left:4px solid var(--accent);background:var(--card);box-shadow:var(--shadow);padding:1.4rem 1.7rem;border-radius:0 var(--radius) var(--radius) 0;font-family:var(--display);font-size:clamp(1.1rem,2.4vw,1.45rem);font-weight:500;line-height:1.5;color:var(--ink);max-width:64ch}
+.keystone b{color:var(--accent);font-weight:600}
+.meta-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem}
+.pill{font-size:.77rem;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--body);padding:.36rem .85rem;border-radius:99px}
+.pill b{color:var(--accent)}
+
+/* ============================================================
+   SECTION: SHARED — card, grids, stat, alert, pearl, mentor, source
+   ============================================================ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.6rem;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.1rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.1rem}
+@media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+
+.statband{display:flex;gap:1rem;flex-wrap:wrap;margin:1.3rem 0}
+.stat{flex:1 1 160px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.2rem;box-shadow:var(--shadow);border-top:3px solid var(--cat,var(--accent))}
+.stat .n{font-family:var(--display);font-weight:700;font-size:2rem;color:var(--cat,var(--accent));line-height:1}
+.stat .l{font-size:.84rem;color:var(--muted);margin-top:.35rem;line-height:1.45}
+
+.alert{border-left:4px solid var(--econ);background:var(--econ-soft);border-radius:0 var(--radius) var(--radius) 0;padding:1rem 1.3rem;margin:1.2rem 0}
+.alert .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--econ);font-weight:700;display:block;margin-bottom:.3rem}
+.pearl{border-left:4px solid var(--energy);background:var(--energy-soft);border-radius:0 var(--radius) var(--radius) 0;padding:1rem 1.3rem;margin:1.2rem 0}
+.pearl .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--energy);font-weight:700;display:block;margin-bottom:.3rem}
+.mentor{position:relative;background:var(--water-soft);border:1px solid color-mix(in oklab,var(--water) 25%,var(--line));border-radius:var(--radius);padding:1.1rem 1.4rem 1.1rem 3.2rem;margin:1.3rem 0}
+.mentor::before{content:"";position:absolute;left:1.1rem;top:1.25rem;width:1.3rem;height:1.3rem;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--water),color-mix(in oklab,var(--water) 55%,#000))}
+.mentor .tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--water);font-weight:600;display:block;margin-bottom:.3rem}
+.mentor p{max-width:64ch}
+
+/* inline source citation — the heart of "dig deeper" */
+.src{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline;margin-top:1rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.82rem;color:var(--muted)}
+.src .lab{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cat,var(--accent));font-weight:600}
+.src a{font-weight:600;text-decoration:none;border-bottom:1px solid color-mix(in oklab,var(--water) 40%,transparent)}
+.src a:hover{border-bottom-color:var(--water)}
+.src .est{font-style:italic}
+.tag-est{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:.1rem .45rem;border-radius:4px;background:var(--energy-soft);color:var(--energy);vertical-align:middle;margin-left:.3rem}
+
+/* ============================================================
+   SECTION: VIZ — flow (cycle), bars, comparator, bottles
+   ============================================================ */
+.flow{display:flex;align-items:stretch;gap:.5rem;flex-wrap:wrap;margin:1.4rem 0}
+.flow .node{flex:1 1 130px;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--cat,var(--accent));border-radius:var(--radius);padding:.9rem .8rem;text-align:center;box-shadow:var(--shadow);position:relative}
+.flow .node .ic{font-size:1.5rem;display:block;margin-bottom:.3rem}
+.flow .node .t{display:block;font-weight:600;color:var(--ink);font-size:.9rem}
+.flow .node .d{display:block;font-size:.74rem;color:var(--muted);margin-top:.2rem}
+.flow .arr{display:flex;align-items:center;color:var(--muted);font-size:1.3rem;flex:0 0 auto}
+@media(max-width:760px){.flow{flex-direction:column}.flow .arr{transform:rotate(90deg);justify-content:center}}
+
+.bars{margin:1.3rem 0;display:flex;flex-direction:column;gap:.7rem}
+.bars .row{display:grid;grid-template-columns:minmax(110px,28%) 1fr;gap:.8rem;align-items:center}
+.bars .rl{font-size:.85rem;color:var(--body);font-weight:600}
+.bars .rl small{display:block;color:var(--muted);font-weight:400;font-size:.74rem}
+.bars .track{background:var(--bg-2);border-radius:99px;height:1.7rem;position:relative;overflow:hidden;border:1px solid var(--line)}
+.bars .fill{height:100%;border-radius:99px;background:var(--cat,var(--accent));display:flex;align-items:center;justify-content:flex-end;padding-right:.6rem;color:#fff;font-size:.78rem;font-weight:700;min-width:2.5rem;transition:width .8s ease}
+.bars .fill.muted{background:color-mix(in oklab,var(--cat,var(--accent)) 35%,var(--line));color:var(--ink)}
+
+.cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:stretch;margin:1.2rem 0}
+@media(max-width:680px){.cmp{grid-template-columns:1fr}.cmp .arrowcol{transform:rotate(90deg)}}
+.cmp .col{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.2rem;box-shadow:var(--shadow)}
+.cmp .col.bad{border-color:color-mix(in oklab,var(--econ) 35%,var(--line))}
+.cmp .col .ch{font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cmp .col .cn{font-family:var(--display);font-size:1.5rem;font-weight:700;color:var(--ink);margin:.2rem 0}
+.cmp .col.bad .cn{color:var(--econ)}
+.cmp .arrowcol{display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--muted)}
+
+.bottles{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.1rem 0;font-size:1.7rem}
+.bottles .cap{align-self:center;font-size:.9rem;color:var(--muted);margin-left:.6rem}
+
+figure{margin:1.6rem 0}
+figure img{width:100%;height:auto;border-radius:var(--radius);border:1px solid var(--line);background:#fff;display:block}
+figcaption{color:var(--muted);font-size:.82rem;margin-top:.6rem;line-height:1.5;max-width:75ch}
+figcaption b{color:var(--ink)}
+
+/* clean table */
+table{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:.6rem .8rem;text-align:left;vertical-align:top}
+thead th{background:var(--bg-2);font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+
+/* progressive disclosure */
+details{margin:1.1rem 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--card-2);overflow:hidden}
+details summary{cursor:pointer;padding:.8rem 1.1rem;font-weight:600;color:var(--ink);font-size:.9rem;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";color:var(--cat,var(--accent));font-weight:700}
+details[open] summary::before{content:"▾ "}
+details .body{padding:0 1.1rem 1rem}
+
+/* ============================================================
+   SECTION: SOURCES appendix
+   ============================================================ */
+.src-cat{margin-bottom:1.6rem}
+.src-cat h3{border-bottom:1px solid var(--line);padding-bottom:.4rem;margin:1.4rem 0 .8rem}
+.src-item{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--cat,var(--accent));border-radius:0 8px 8px 0;padding:.8rem 1rem;margin-bottom:.7rem}
+.src-item a{font-weight:600;text-decoration:none}
+.src-item a:hover{text-decoration:underline}
+.src-item p{font-size:.82rem;color:var(--muted);margin-top:.3rem;max-width:75ch}
+.src-item .noverif{color:var(--energy);font-weight:600}
+
+footer{margin:4rem 0 2rem;padding-top:1.5rem;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;text-align:center}
+
+/* ============================================================
+   SECTION: palette switcher (floating)
+   ============================================================ */
+.pal-fab{position:fixed;right:1rem;bottom:1rem;z-index:55;background:var(--ink);color:#fff;border:none;border-radius:99px;padding:.6rem 1rem;font-family:var(--font);font-weight:600;font-size:.82rem;cursor:pointer;box-shadow:var(--shadow)}
+.pal-panel{position:fixed;right:1rem;bottom:3.6rem;z-index:55;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;width:min(320px,calc(100vw - 2rem));max-height:75vh;overflow:auto}
+.pal-panel h5{font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:.6rem 0 .4rem}
+.pal-panel h5:first-child{margin-top:0}
+.pal-opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:.5rem .7rem;margin-bottom:.35rem;cursor:pointer;font-family:var(--font);font-size:.82rem;color:var(--ink);transition:.12s}
+.pal-opt:hover{border-color:var(--accent);background:var(--bg-2)}
+.pal-opt.on{border-color:var(--accent);background:var(--accent-soft)}
+.pal-opt small{display:block;color:var(--muted);font-size:.72rem;margin-top:.15rem}
+.pal-sw{display:inline-flex;gap:.2rem;margin-left:.5rem;vertical-align:middle}
+.pal-sw i{width:.85rem;height:.85rem;border-radius:3px;border:1px solid rgba(0,0,0,.1)}
+.pal-row{display:flex;gap:.4rem;margin-top:.6rem}
+.pal-row button{flex:1;font-size:.74rem;padding:.4rem;border:1px solid var(--line);background:var(--card);border-radius:7px;cursor:pointer;font-family:var(--font);font-weight:600;color:var(--ink)}
+
+/* ============================================================
+   SECTION: PRINT
+   ============================================================ */
+@media print{
+  :root{--bg:#fff;--card:#fff;--bg-2:#fff;--band:#fff;--ink:#000;--body:#1a1a1a;--muted:#555;--line:#bbb}
+  body{font-size:11pt}
+  .topbar,#prog,.pal-fab,.pal-panel,.meta-row{display:none !important}
+  details{border:none}details summary{display:none}details .body{display:block !important;padding:0}
+  section{margin-top:1.2rem;break-inside:avoid}
+  .card,.stat,.src-item,.flow .node,figure{break-inside:avoid;box-shadow:none}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:.78em;color:#666;word-break:break-all}
+}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div class="topbar"><div class="inner">
+  <span class="brand">⚡ The real cost of a token</span>
+  <nav class="navlinks">
+    <a href="#ciclo">Cycle</a>
+    <a href="#crecimiento">Growth</a>
+    <a href="#agua">Water</a>
+    <a href="#energia">Energy</a>
+    <a href="#ewaste">E-waste</a>
+    <a href="#suelo">Land</a>
+    <a href="#comunidades">Backlash</a>
+    <a href="#global">Global</a>
+    <a href="#refrigeracion">Cooling</a>
+    <a href="#economia">Economics</a>
+    <a href="#china">China</a>
+    <a href="#ipos">IPOs</a>
+    <a href="#conclusion">Summary</a>
+  </nav>
+  <a href="index-es.html" class="lang" title="Versión en español">ES</a>
+  <a href="#fuentes" class="src-cta">📚 Sources</a>
+</div></div>
+
+<div class="wrap">
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="eyebrow">Physical & financial cost of AI · 2026</div>
+  <h1>The true cost of an AI token</h1>
+  <p class="sub">Water that evaporates, electricity that burns, hardware that ages and land that gets occupied — what you don't see behind every answer.</p>
+  <div class="keystone">
+    A token isn't just a number. It's <b>cooling water</b>, <b>kWh</b> from a strained grid, <b>metals</b> from a GPU that will soon be replaced, and <b>capital</b> that isn't profitable yet. This presentation separates the <b>documented</b> from the <b>exaggerated</b>: every figure carries its source.
+  </div>
+  <div class="meta-row">
+    <span class="pill">⏱️ <b>~12 min</b> read</span>
+    <span class="pill">🔎 Verified <b>primary sources</b></span>
+    <span class="pill">🖨️ <b>Printable</b> & downloadable</span>
+  </div>
+</header>
+
+<!-- ================= PHYSICAL CYCLE ================= -->
+<section id="ciclo" style="--cat:var(--accent)">
+  <div class="k">The journey</div>
+  <h2>The physical life-cycle of a token</h2>
+  <p class="sec-intro">Before the numbers, it helps to see <strong>where</strong> the cost happens. Every token runs through a physical chain that ends in waste — and each link consumes a real resource.</p>
+  <div class="flow">
+    <div class="node" style="--cat:var(--water)"><span class="ic">💬</span><span class="t">Token</span><span class="d">the request</span></div>
+    <div class="arr">→</div>
+    <div class="node" style="--cat:var(--econ)"><span class="ic">🖥️</span><span class="t">GPU / rack</span><span class="d">compute</span></div>
+    <div class="arr">→</div>
+    <div class="node" style="--cat:var(--energy)"><span class="ic">🔥</span><span class="t">Heat + kWh</span><span class="d">electricity</span></div>
+    <div class="arr">→</div>
+    <div class="node" style="--cat:var(--cool)"><span class="ic">💧</span><span class="t">Cooling</span><span class="d">water / cooling</span></div>
+    <div class="arr">→</div>
+    <div class="node" style="--cat:var(--ewaste)"><span class="ic">♻️</span><span class="t">E-waste</span><span class="d">retired hardware</span></div>
+  </div>
+  <p>The next four sections walk through this chain's resources — water, energy, hardware and land — and the last asks who pays the bill.</p>
+</section>
+
+<!-- ================= GROWTH / JEVONS ================= -->
+<section id="crecimiento" class="band" style="--cat:var(--accent)">
+  <div class="k">Why it grows so fast</div>
+  <h2>Token growth and the Jevons paradox</h2>
+  <p class="sec-intro">The cost per token <strong>falls</strong> every year. And yet total consumption <strong>rises</strong>. It's not a contradiction: it's the Jevons paradox — when something gets more efficient and cheaper, we use it so much more that absolute consumption grows.</p>
+
+  <div class="statband">
+    <div class="stat"><div class="n">3.2 quadrillion</div><div class="l">tokens a month processed by Google (May 2026), <b>~7× more than the year before</b>. <b>In plain terms:</b> a token ≈ ¾ of a word, so it's like reading the text of about <b>12,000 books every second</b>, non-stop.</div></div>
+    <div class="stat"><div class="n">415 → 945 TWh</div><div class="l">data-center electricity, from 2024 to 2030 (IEA). <b>In plain terms:</b> today they already use as much as <b>all of France</b> in a year; by 2030, almost as much as <b>all of Japan</b>.</div></div>
+    <div class="stat"><div class="n">~50×</div><div class="l">more CO₂ per question in a "reasoning" model than in a small one — because of the thousands of "thinking tokens" it generates before answering.</div></div>
+  </div>
+
+  <h3>From 200 to over a million tokens per task</h3>
+  <p>The growth in work per query is brutal — though these per-task figures are an <span class="tag-est">illustrative estimate</span> from an industry analysis, not a measurement:</p>
+  <div class="bars">
+    <div class="row"><div class="rl">2020 <small>enterprise query</small></div><div class="track"><div class="fill muted" style="width:3%">~200</div></div></div>
+    <div class="row"><div class="rl">2025 <small>agentic exchange</small></div><div class="track"><div class="fill" style="width:18%">~22,000</div></div></div>
+    <div class="row"><div class="rl">2030 <small>projection</small></div><div class="track"><div class="fill" style="width:100%">~1,500,000</div></div></div>
+  </div>
+
+  <div class="mentor">
+    <span class="tag">The idea that sticks</span>
+    <p><strong>Reasoning models</strong> generate hundreds to thousands of hidden "thinking tokens" before answering — that's why they cost <strong>5–10×</strong> more and emit far more. The "smarter" the answer, the more physical resources behind it.</p>
+  </div>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://www.iea.org/reports/energy-and-ai/executive-summary" target="_blank" rel="noopener">IEA — Energy & AI (2025)</a> ·
+    <a href="https://arxiv.org/abs/2501.16548" target="_blank" rel="noopener">Jevons & AI — arXiv 2501.16548</a> ·
+    <a href="https://www.sec.gov/Archives/edgar/data/0001652044/000165204425000087/googexhibit991q32025.htm" target="_blank" rel="noopener">Alphabet 8-K (token throughput)</a>
+  </div>
+</section>
+
+<!-- ================= WATER ================= -->
+<section id="agua" style="--cat:var(--water)">
+  <div class="k">💧 Water</div>
+  <h2>The water that evaporates</h2>
+  <p class="sec-intro">Cooling the chips consumes fresh water — a lot during training, and a constant trickle with every query. The problem isn't only the volume: it's <strong>where</strong> it's used.</p>
+
+  <div class="statband">
+    <div class="stat"><div class="n">2.77 million liters</div><div class="l">of water + 493 tonnes of CO₂ to create <b>the entire OLMo model series</b>. <b>In plain terms:</b> the drinking water for about 25 people over their whole lives.</div></div>
+    <div class="stat"><div class="n">~0.5 L</div><div class="l">of water per ~100-word answer (GPT-4 class), UC Riverside estimate</div></div>
+    <div class="stat"><div class="n">~2 in 3</div><div class="l">new US data centers in drought / water-stressed areas</div></div>
+  </div>
+
+  <div class="bottles">
+    💧💧💧💧💧💧💧💧💧💧 <span class="cap">≈ 10 long answers ≈ one 5 L bottle</span>
+  </div>
+
+  <div class="alert" style="--cat:var(--water)">
+    <span class="tag">Precision</span>
+    Those 2.77 million liters are the <strong>total for the entire OLMo model series</strong> (development + hardware + training runs), not a single model: a 13B OLMo&nbsp;2 alone uses ~892,000 L and ~101 t CO₂. The citable per-query figure is ~0.5 L per answer; any "liters per conversation" depends heavily on the model and data center.
+  </div>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://arxiv.org/abs/2503.05804" target="_blank" rel="noopener">Morrison et al., AI2 — Holistic Environmental Impact (ICLR 2025)</a> ·
+    <a href="https://arxiv.org/abs/2304.03271" target="_blank" rel="noopener">Ren et al. — "Making AI Less Thirsty"</a>
+  </div>
+</section>
+
+<!-- ================= ENERGY / CO2 ================= -->
+<section id="energia" class="band" style="--cat:var(--energy)">
+  <div class="k">⚡ Electricity & CO₂</div>
+  <h2>The electricity that burns</h2>
+  <p class="sec-intro">Not all queries cost the same. An empirical test on real GPUs shows a <strong>two-orders-of-magnitude</strong> difference between a small model and a large reasoner.</p>
+
+  <h3>CO₂ per question — measured on real GPUs</h3>
+  <p>Both figures in <strong>grams</strong>, to compare them at a glance:</p>
+  <div class="bars">
+    <div class="row"><div class="rl">Qwen 7B <small>small model</small></div><div class="track"><div class="fill" style="width:2%">27.7 g</div></div></div>
+    <div class="row"><div class="rl">DeepSeek-R1 70B <small>reasoner</small></div><div class="track"><div class="fill" style="width:100%">~2,000 g</div></div></div>
+  </div>
+  <p style="font-size:.9rem;color:var(--body)"><strong>In plain terms:</strong> 27.7 g is like leaving an LED bulb on for ~20 minutes. ~2,000 g (that is, 2 kg) is about <strong>75 bulbs</strong> for the same time — or driving a car about <strong>10 km</strong>. The reasoner emits almost <strong>75× more</strong> in this case, because it generates thousands of hidden "thinking tokens" before answering.</p>
+
+  <h3>The global aggregate</h3>
+  <p>The IEA projects data centers go from <strong>415 TWh</strong> (1.5% of all the world's electricity, 2024) to <strong>~945 TWh in 2030</strong> — growing ~12% a year, more than four times faster than total electricity demand. <strong>In plain terms:</strong> today they consume as much as <strong>all of France</strong> in a year; by 2030, almost as much as <strong>all of Japan</strong>. The IEA names AI as "the most important factor in that growth".</p>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://doi.org/10.3389/fcomm.2025.1572947" target="_blank" rel="noopener">Dauner & Socher — Frontiers in Communication (2025)</a> ·
+    <a href="https://www.iea.org/reports/energy-and-ai/executive-summary" target="_blank" rel="noopener">IEA — Energy & AI (2025)</a>
+  </div>
+</section>
+
+<!-- ================= E-WASTE ================= -->
+<section id="ewaste" style="--cat:var(--ewaste)">
+  <div class="k">🖥️ Hardware</div>
+  <h2>The hardware that ages</h2>
+  <p class="sec-intro">GPUs aren't retired because they fail, but because the next generation performs better. That accelerated cycle feeds one of the planet's fastest-growing waste streams.</p>
+
+  <div class="statband">
+    <div class="stat"><div class="n">62 Mt</div><div class="l">of e-waste globally in 2022 — only <b>22.3%</b> formally recycled</div></div>
+    <div class="stat"><div class="n">$91 billion</div><div class="l">value of the metals contained in that e-waste — of which <b>$62 billion is lost</b> unrecovered (UNITAR/ITU)</div></div>
+    <div class="stat"><div class="n">~10×</div><div class="l">higher gold concentration in a circuit board than in mine ore</div></div>
+  </div>
+
+  <p>A tonne of <strong>circuit boards</strong> contains on the order of 90 g of gold, 400 g of silver and 200 kg of copper — concentrations far above mine rock. That's why e-waste is called an "urban mine": throwing out hardware is throwing out high-grade metal.</p>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://www.itu.int/pub/D-GEN-E_WASTE.01-2024" target="_blank" rel="noopener">Global E-Waste Monitor 2024 (UNITAR/ITU)</a> ·
+    <a href="https://cen.acs.org/environment/recycling/Electronic-waste-gold-mine-waiting/102/i23" target="_blank" rel="noopener">C&EN — e-waste as an urban mine</a>
+  </div>
+</section>
+
+<!-- ================= LAND / SPACE ================= -->
+<section id="suelo" class="band" style="--cat:var(--space)">
+  <div class="k">🏭 Physical space</div>
+  <h2>The land and grid that get occupied</h2>
+  <p class="sec-intro">You can't build a data center just anywhere: it needs land, water and — above all — a power grid that can take it. Those limits are stricter than the "infinite scale" narrative suggests.</p>
+
+  <div class="statband">
+    <div class="stat"><div class="n">176 TWh</div><div class="l">US data-center consumption (2023) = <b>4.4%</b> of national electricity (LBNL)</div></div>
+    <div class="stat"><div class="n">325–580 TWh</div><div class="l">2028 projection = 6.7–12% of the national total</div></div>
+    <div class="stat"><div class="n">tens of GW</div><div class="l">feasible US hyperscale capacity — "not hundreds" (Janosov, 2026)</div></div>
+  </div>
+
+  <div class="mentor" style="--cat:var(--space)">
+    <span class="tag" style="color:var(--space)">Why this matters</span>
+    <p>Here's the key tension: demand projections for AI data centers run into the <strong>hundreds of gigawatts</strong>. But because of grid, water and suitable-land limits, only <strong>tens</strong> realistically fit in the US. That gap — <strong>hundreds requested, tens possible</strong> — is AI's real physical ceiling: either demand goes unmet, or it spills over to other countries, or it ends up straining everyone's power grid.</p>
+  </div>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://arxiv.org/abs/2602.02529" target="_blank" rel="noopener">Janosov (2026) — Feasibility of US hyperscale siting</a> ·
+    <a href="https://eta-publications.lbl.gov/sites/default/files/2024-12/lbnl-2024-united-states-data-center-energy-usage-report_1.pdf" target="_blank" rel="noopener">LBNL — US Data Center Energy Usage (2024)</a>
+  </div>
+</section>
+
+<!-- ================= COMMUNITIES / LAWS / NUCLEAR ================= -->
+<section id="comunidades" style="--cat:var(--econ)">
+  <div class="k">⚖️ The backlash</div>
+  <h2>When the data center comes to the neighborhood</h2>
+  <p class="sec-intro">The limit isn't only technical — it's social and political. As data centers move closer to homes, complaints about <strong>noise</strong> and <strong>emissions</strong> grow, states start to legislate, and the power to feed them — including the nuclear bet — arrives slower than demand.</p>
+
+  <h3>🔊 Noise: a hum that never stops</h3>
+  <p>Cooling systems (fans, chillers) produce a constant low-frequency hum. In <strong>Loudoun County (Virginia)</strong>, "Data Center Alley", up to <strong>90 dB</strong> was measured near a facility — the residential limit is 55 dB. In <strong>Chandler (Arizona)</strong>, after years of complaints, the city council rejected a $2.5 billion AI data center <strong>7-0</strong> (Dec 2025). In <strong>Granbury (Texas)</strong>, residents sued over a ~90 dB noise they link to headaches, tinnitus and high blood pressure.</p>
+
+  <h3>💨 Emissions: gas turbines next to homes</h3>
+  <p>The flagship case: xAI's <strong>"Colossus" supercomputer in Memphis</strong> ran dozens of <strong>unpermitted gas turbines</strong> next to majority-Black neighborhoods. The <strong>EPA found Clean Air Act violations</strong> (Jan 2026) and the <strong>NAACP sued</strong> (Apr 2026); emissions include NOx, fine particulates and ~19 tonnes/year of formaldehyde (a carcinogen). In Virginia, thousands of <strong>diesel backup generators</strong> raise air-quality concerns.</p>
+
+  <h3>🏛️ The law reacts</h3>
+  <div class="statband">
+    <div class="stat"><div class="n">~267 bills</div><div class="l">on data centers across 40+ US states in 2025 (~40 enacted); 300+ more in the first weeks of 2026</div></div>
+    <div class="stat"><div class="n">7-0</div><div class="l">votes by which Tucson (AZ) rejected "Project Blue" and Chandler its AI data center</div></div>
+    <div class="stat"><div class="n">moratoriums</div><div class="l">pauses in counties in Maryland, Missouri and Georgia, and ~19 Michigan townships</div></div>
+  </div>
+  <p>Texas passed <strong>SB 6</strong> (a "kill switch": large loads must be disconnectable during grid emergencies); Loudoun ended by-right construction. Not everything passes — many bills die in committee — but the pushback is real and bipartisan.</p>
+
+  <h3>☢️ The nuclear bet that hasn't arrived</h3>
+  <p>To power this 24/7 demand without coal, Big Tech turned back to nuclear: Microsoft is restarting <strong>Three Mile Island</strong> (835 MW), Amazon signed with Talen (up to 1.92 GW), Google with Kairos (500 MW by 2035) and Meta up to 6.6 GW.</p>
+  <div class="alert" style="--cat:var(--econ)">
+    <span class="tag">The uncomfortable detail</span>
+    Big Tech has signed <strong>more than 10 GW</strong> of nuclear power in a year — but as of mid-2026, <strong>~0 GW of new or restarted nuclear is actually delivering power</strong> to a data center. Restarts take years (Three Mile Island ~2027, Duane Arnold ~2029) and no commercial small modular reactor (SMR) operates yet in the US. The power exists in the announcements; on the grid, it arrives around 2027–2030. The demand, meanwhile, is already here.
+  </div>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://stateline.org/2026/03/06/temporarily-banning-data-centers-draws-more-interest-from-state-local-officials/" target="_blank" rel="noopener">Stateline — state moratoriums & laws</a> ·
+    <a href="https://earthjustice.org/press/2026/xai-sued-for-illegal-power-plant" target="_blank" rel="noopener">Earthjustice — xAI's Memphis turbines</a> ·
+    <a href="https://www.constellationenergy.com/news/2025/09/one-year-later-crane-clean-energy-center-still-in-the-spotlight-and-ahead-of-schedule.html" target="_blank" rel="noopener">Constellation — Three Mile Island restart</a>
+  </div>
+</section>
+
+<!-- ================= GLOBAL: EUROPE & JAPAN ================= -->
+<section id="global" style="--cat:var(--green)">
+  <div class="k">🌍 Not just the US</div>
+  <h2>Europe and Japan: two different models</h2>
+  <p class="sec-intro">The US builds first and regulates later. Europe does the opposite, and Japan serves as a yardstick. Three views that show the problem is global.</p>
+
+  <div class="grid3">
+    <div class="card" style="--cat:var(--econ)">
+      <h4>🇮🇪 Ireland — the extreme case</h4>
+      <p>Data centers already consume <strong>22% of the country's entire electricity</strong> (2024) — more than all urban households combined. Projected at <strong>~30% by 2032</strong>.</p>
+    </div>
+    <div class="card" style="--cat:var(--space)">
+      <h4>🇪🇺 Europe — regulates first</h4>
+      <p>Mandatory energy and water reporting, and a brake: Ireland <strong>froze new Dublin grid connections (2021–2025)</strong>; now they're only allowed if the data center <strong>generates its own power</strong>.</p>
+    </div>
+    <div class="card" style="--cat:var(--energy)">
+      <h4>🇯🇵 Japan — the yardstick</h4>
+      <p>By 2030, the world's data centers will consume <strong>almost as much as all of Japan today</strong>. And Japan itself triples its own consumption by 2034 — with <strong>40%+ of the new power from coal and gas</strong>.</p>
+    </div>
+  </div>
+
+  <div class="mentor" style="--cat:var(--green)">
+    <span class="tag" style="color:var(--green)">The idea that sticks</span>
+    <p>Ireland shows where the "build without limits" model leads: nearly <strong>a quarter of a developed country's electricity</strong> dedicated to server farms. Europe responded by tying each new data center to <strong>bringing its own power</strong> — a brake the US still doesn't have.</p>
+  </div>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://www.irishtimes.com/environment/2025/06/10/data-centres-accounted-for-more-than-fifth-of-irelands-electricity-usage-last-year/" target="_blank" rel="noopener">Irish Times / CSO — Ireland 22%</a> ·
+    <a href="https://www.woodmac.com/press-releases/japan-data-centers-power-demand/" target="_blank" rel="noopener">Wood Mackenzie — Japan triples by 2034</a> ·
+    <a href="https://www.iea.org/reports/energy-and-ai/executive-summary" target="_blank" rel="noopener">IEA — 945 TWh ≈ Japan</a>
+  </div>
+</section>
+
+<!-- ================= COOLING / CHINA ================= -->
+<section id="refrigeracion" style="--cat:var(--cool)">
+  <div class="k">❄️ Cooling</div>
+  <h2>The cold that's no longer optional</h2>
+  <p class="sec-intro">A modern AI rack (NVIDIA GB200) can draw <strong>120 kW</strong>, and almost all of that energy ends up as heat. Here's what isn't obvious: <strong>a huge share of a data center's electricity — and of its investment — doesn't power the chips, it's spent just cooling them</strong>. At this density air no longer cuts it, and liquid cooling went from luxury to requirement.</p>
+
+  <h3>First, understanding PUE</h3>
+  <p><strong>PUE</strong> (power usage effectiveness) measures how much electricity goes to <em>everything that isn't compute</em> — mostly cooling. A PUE of 1.0 would be perfect; every tenth above that is wasted energy.</p>
+  <div class="bars">
+    <div class="row"><div class="rl">Industry average <small>conventional air</small></div><div class="track"><div class="fill" style="width:100%">1.54</div></div></div>
+    <div class="row"><div class="rl">Hyperscalers <small>Google, Meta… (optimized air)</small></div><div class="track"><div class="fill muted" style="width:71%">~1.10</div></div></div>
+    <div class="row"><div class="rl">Liquid cooling <small>the target</small></div><div class="track"><div class="fill" style="width:78%">&lt;1.2</div></div></div>
+  </div>
+  <p style="font-size:.9rem;color:var(--body)"><strong>In plain terms:</strong> a PUE of 1.54 means that for every watt reaching the chips, <strong>another half-watt is spent just on cooling and losses</strong> — roughly <strong>a third of all the data center's electricity goes to moving heat, not computing</strong>. And it's not only energy: cooling equipment is also a giant share of the <strong>cost to build</strong> the data center. That's why lowering PUE with liquid cooling is where much of the efficiency battle is fought.</p>
+
+  <h3>Who makes the cold? The West leads, China is rising fast</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>🇺🇸🇪🇺 The market leaders are Western</h4>
+      <p><strong>Vertiv</strong> (US) is the clear leader — its liquid business <strong>more than doubled</strong> revenue in 2025. Behind it: <strong>Schneider Electric</strong> (France, bought Motivair), <strong>CoolIT</strong> (Canada), <strong>LiquidStack</strong>, <strong>Boyd</strong> and <strong>nVent</strong> (US). It's not a China-dominated industry.</p>
+    </div>
+    <div class="card">
+      <h4>🇨🇳 China is growing from its own demand</h4>
+      <p><strong>Envicool</strong> (Shenzhen, +40% revenue), <strong>Huawei</strong> and <strong>Inspur</strong> are gaining ground on cost and volume. The signal: in March 2026 <strong>Google entered talks to buy from Envicool</strong> — Chinese suppliers now credible even to a US hyperscaler, but <em>competing with</em> Vertiv, not displacing it.</p>
+    </div>
+  </div>
+  <p style="font-size:.9rem;color:var(--muted)">Japan and Europe contribute too, especially in <strong>immersion cooling</strong>: Fujitsu and NEC/KDDI (Japan, up to ~94% less cooling energy in trials), Submer (Spain) and Iceotope (UK).</p>
+
+  <div class="pearl" style="--cat:var(--cool)">
+    <span class="tag" style="color:var(--cool)">A concrete example</span>
+    Haier (China) unveiled a solution for AI data centers with <strong>active magnetic-levitation bearings</strong> that takes up to <strong>70% less space</strong> and keeps PUE below 1.2 — versus the 1.54 industry average. The liquid-cooling market for AI servers goes from <strong>~$8.9 billion (2025) to over $17 billion (2026)</strong>, per JPMorgan.
+  </div>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://intelligence.uptimeinstitute.com/sites/default/files/2025-07/UI%20Field%20181_Data%20center%20cooling.pdf" target="_blank" rel="noopener">Uptime Institute — PUE 1.54 & cooling 2025</a> ·
+    <a href="https://www.investing.com/news/stock-market-news/google-in-talks-with-chinas-envicool-others-to-buy-data-centre-cooling-systems-sources-say-4564643" target="_blank" rel="noopener">Reuters — Google, Envicool & JPMorgan market</a> ·
+    <a href="https://www.chinadaily.com.cn/a/202604/09/WS69d76a88a310d6866eb428b3.html" target="_blank" rel="noopener">China Daily — Haier AIDC</a>
+  </div>
+</section>
+
+<!-- ================= ECONOMICS ================= -->
+<section id="economia" class="band" style="--cat:var(--econ)">
+  <div class="k">💰 Economics</div>
+  <h2>Who pays the bill?</h2>
+  <p class="sec-intro">The physical cost only matters if someone funds it. And that's where the honest tension is: generative AI <strong>isn't profitable per unit yet</strong> — but, contrary to what you often hear, <strong>there's no imminent collapse</strong>: capital keeps pouring in at record levels.</p>
+
+  <div class="cmp">
+    <div class="col"><div class="ch">Traditional SaaS</div><div class="cn">80–90%</div><div>typical gross margin</div></div>
+    <div class="arrowcol">vs</div>
+    <div class="col bad"><div class="ch">OpenAI (estimated)</div><div class="cn">~33%</div><div>gross margin, capped by inference</div></div>
+  </div>
+
+  <div class="statband">
+    <div class="stat"><div class="n">~$8.4 billion</div><div class="l">OpenAI's compute costs in 2025 (→ ~$14.1 billion projected for 2026)</div></div>
+    <div class="stat"><div class="n">Confidential S-1</div><div class="l">OpenAI filed its pre-IPO registration with the SEC (~June 2026)</div></div>
+    <div class="stat" style="--cat:var(--green)"><div class="n">~$255 billion</div><div class="l">AI venture-capital funding in <b>the first quarter of 2026 alone</b> — an all-time record (PitchBook)</div></div>
+  </div>
+
+  <h3>The circular money machine</h3>
+  <p>Part of AI's "growth" is <strong>circular</strong>: the same companies fund and buy from each other. Nvidia commits to investing <strong>up to $100 billion</strong> in OpenAI; OpenAI signs a <strong>$300 billion</strong> cloud deal with Oracle and commits to deploying <strong>6 GW of AMD chips</strong> (with an option to buy 160 million AMD shares); Oracle, in turn, spends <strong>tens of billions on Nvidia chips</strong>. The money returns to where it started.</p>
+
+  <div class="card" style="--cat:var(--econ);text-align:center">
+    <p style="margin:0 0 .5rem;max-width:none"><strong>📊 Recommended visualization: "How Nvidia and OpenAI Fuel the AI Money Machine"</strong></p>
+    <p style="margin:0 auto;max-width:62ch">A diagram of the cross-flows — investment, hardware, services and venture capital — among the same players (Nvidia, OpenAI, Oracle, AMD, CoreWeave, xAI…), with figures as of ~Sept–Nov 2025.<br>
+    <a href="https://flowingdata.com/" target="_blank" rel="noopener">View the original chart ↗</a> &nbsp;·&nbsp; Bloomberg News · FlowingData</p>
+  </div>
+
+  <div class="alert" style="--cat:var(--econ)">
+    <span class="tag">Why it worries — and why it isn't "fraud"</span>
+    Analysts at Bernstein and the <em>Financial Times</em> warn this <strong>circularity</strong> echoes the "vendor financing" of the dot-com bubble (Nortel, Lucent): if the same companies buy from each other, how much demand is <em>real</em>? The solid proof of genuine demand is revenue that comes from <strong>outside the circle</strong>. Honest nuance: these are <strong>commitments and letters of intent</strong> that play out over years, not cash already spent — a legitimate concern, not illegality.
+  </div>
+
+  <blockquote style="font-family:var(--display);font-size:1.2rem;font-weight:500;color:var(--ink);border-left:4px solid var(--econ);padding:.6rem 0 .6rem 1.2rem;margin:1.4rem 0;max-width:62ch">
+    "OpenAI's business model is not sustainable."
+    <span style="display:block;font-family:var(--font);font-size:.85rem;color:var(--muted);font-weight:400;margin-top:.4rem">— Kai-Fu Lee, CEO of 01.AI (Bloomberg, March 2025)</span>
+  </blockquote>
+
+  <details>
+    <summary>Common myths about an AI "financial collapse"</summary>
+    <div class="body">
+      <p>Alarmist figures circulate that don't survive a check against primary sources:</p>
+      <ul>
+        <li>❌ <strong>"The SEC is investigating $5.7 billion for <em>wash trading</em>"</strong> and <strong>"testimony from a Microsoft <em>whistleblower</em>"</strong> → don't exist in any credible source.</li>
+        <li>❌ <strong>"7-month runway (OpenAI) / 5.3 months (Anthropic)"</strong> → unsupported; both are funded far beyond that.</li>
+        <li>❌ <strong>"45% drop in AI funding"</strong> → it's the opposite: Q1 2026 was a <strong>record</strong> (~$255 billion, PitchBook).</li>
+        <li>❌ <strong>"68% of revenue is cloud credits"</strong> → a mix-up with a "+68% in inference costs".</li>
+      </ul>
+      <p>What <em>is</em> real: low margins, huge cash burn and a genuine debate about profitability. The honest conclusion isn't "collapse", but <strong>a capital bet not yet resolved</strong>.</p>
+    </div>
+  </details>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://sacra.com/research/openai/" target="_blank" rel="noopener">Sacra — OpenAI margins & compute</a> ·
+    <a href="https://fortune.com/2026/06/09/openai-files-confidential-s-1-sec-ipo/" target="_blank" rel="noopener">Fortune — OpenAI's confidential S-1</a> ·
+    <a href="https://pitchbook.com/news/articles/q1-2026-ai-funding-blows-past-2025-total-with-three-deals-accounting-for-67-of-capital" target="_blank" rel="noopener">PitchBook — record Q1 2026 funding</a>
+  </div>
+</section>
+
+<!-- ================= CHINA ================= -->
+<section id="china" style="--cat:var(--econ)">
+  <div class="k">🇨🇳 The China factor</div>
+  <h2>Cheap tokens: efficiency or subsidy?</h2>
+  <p class="sec-intro">China sells tokens far cheaper than the US — sometimes tens of times cheaper. It's worth understanding why, because the answer mixes <strong>real ingenuity</strong>, <strong>cheap energy</strong> and <strong>subsidies</strong> — and it doesn't mean they've solved the underlying problem.</p>
+
+  <div class="statband">
+    <div class="stat"><div class="n">3–6× … up to 80×</div><div class="l">cheaper Chinese tokens: ~3–6× at the high end and up to ~80× on the budget models (DeepSeek vs Claude Opus)</div></div>
+    <div class="stat" style="--cat:var(--energy)"><div class="n">~3¢ vs 7–9¢</div><div class="l">per kWh for data centers in China vs the US — structurally cheaper energy</div></div>
+    <div class="stat" style="--cat:var(--space)"><div class="n">~60%</div><div class="l">how well China's best chip (Huawei Ascend) performs against an Nvidia H100 in inference — its bottleneck</div></div>
+  </div>
+
+  <h3>Why so cheap? Four reasons, not one</h3>
+  <div class="grid2">
+    <div class="card" style="--cat:var(--green)"><h4>✅ Real efficiency</h4><p>DeepSeek redesigned the model's "memory" (sparse MoE + MLA) and cut compute per query by up to <strong>~93%</strong>. Validated by independent analysis, not marketing.</p></div>
+    <div class="card" style="--cat:var(--green)"><h4>✅ Price war</h4><p>In 2024 ByteDance launched Doubao at a rock-bottom price and, the same week, Alibaba, Baidu and Tencent cut theirs. A domestic battle for share drove prices to the floor.</p></div>
+    <div class="card" style="--cat:var(--energy)"><h4>⚠️ Cheap energy + subsidies</h4><p>Local governments subsidize <strong>up to 50%</strong> of a data center's power bill — but only if it uses <strong>Chinese chips</strong>, not Nvidia. A push with political strings attached.</p></div>
+    <div class="card"><h4>📉 Global trend</h4><p>It's not just China: the inference cost of a GPT-3.5-class model fell <strong>~280×</strong> in 18 months across the whole industry (Stanford HAI).</p></div>
+  </div>
+
+  <div class="alert" style="--cat:var(--econ)">
+    <span class="tag">Do they make money? No — just like the US</span>
+    No Chinese AI company is <strong>verifiably profitable on its own</strong>. DeepSeek's famous "545% margin" is a <em>theoretical</em> figure from the company itself (it assumes 100% paid traffic at peak price). The giants subsidize their AI: Alibaba's operating profit <strong>fell 84%</strong>, partly from spending to acquire users for Qwen.
+  </div>
+
+  <div class="pearl" style="--cat:var(--ewaste)">
+    <span class="tag" style="color:var(--ewaste)">Can you trust the Chinese data?</span>
+    With caveats. <strong>Regulated filings</strong> (SEC, Hong Kong exchange) are solid. <strong>Self-reported claims</strong> ("we trained for $5.6 million") should be taken with a grain of salt: that number is only the compute for <em>one</em> training run; total infrastructure is around <strong>$1.6 billion</strong>. And <strong>Chinese government statistics</strong> have documented low credibility. That said: opacity has grown across <em>the whole</em> industry, not just in China.
+  </div>
+
+  <details>
+    <summary>Do they face the same physical problems? Energy yes, chips worse</summary>
+    <div class="body">
+      <ul>
+        <li><strong>Energy: less of a problem.</strong> Cheaper, more abundant electricity; China added ~8× more generation capacity than the US in 2024. (But ~70% of its AI compute still runs on coal.)</li>
+        <li><strong>Water: similar.</strong> ~1.3 billion m³/year and ~40% of its racks in drought-prone areas — a situation similar to the US.</li>
+        <li><strong>Chips: worse.</strong> Export controls cut them off from the best Nvidia. The 2025–2026 irony: after the back-and-forth, <strong>it's Beijing that now blocks</strong> Nvidia chips to force the use of Huawei — which performs ~60% of an H100 and uses ~4× more power.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://api-docs.deepseek.com/quick_start/pricing" target="_blank" rel="noopener">DeepSeek — official pricing</a> ·
+    <a href="https://newsletter.semianalysis.com/p/deepseek-debates" target="_blank" rel="noopener">SemiAnalysis — DeepSeek's real costs</a> ·
+    <a href="https://hai.stanford.edu/ai-index/2025-ai-index-report" target="_blank" rel="noopener">Stanford HAI — ~280× drop in inference cost</a>
+  </div>
+</section>
+
+<!-- ================= IPOs / MARKETS ================= -->
+<section id="ipos" class="band" style="--cat:var(--econ)">
+  <div class="k">📈 The moment of truth</div>
+  <h2>When belief turns into cash</h2>
+  <p class="sec-intro">For years AI rose on <strong>belief</strong>: investors convinced it would be huge. In 2026 the test arrives — the biggest AI companies hit the public markets almost at once, and that demands <strong>real, new money</strong>, not just enthusiasm.</p>
+
+  <div class="statband">
+    <div class="stat" style="--cat:var(--space)"><div class="n">SpaceX · $75B</div><div class="l">went public June 12, 2026 (already merged with xAI) — the <b>largest IPO in history</b>, ~$2.1 trillion market cap</div></div>
+    <div class="stat"><div class="n">Anthropic · OpenAI</div><div class="l">filed confidential S-1s (June 1 & 8); private valuations ~$965B and ~$852B; IPO possible this fall</div></div>
+    <div class="stat" style="--cat:var(--green)"><div class="n">Google · $85B*</div><div class="l">announced the largest stock sale in its history (June 2026). <b>*But only ~$45B has actually closed</b>; the remaining ~$40B is sold gradually — and largely for employee-equity taxes, not data centers.</div></div>
+  </div>
+
+  <h3>Why it matters: new money, not screen prices</h3>
+  <p>When a stock rises on the market, no new money goes in — only what already exists is repriced. An IPO or a stock issuance is different: <strong>someone has to put up real cash</strong> to buy all those new shares. And the sum is enormous: the biggest IPO year in history (2021) raised ~$142 billion; <strong>2025 raised ~$46 billion</strong>. SpaceX + OpenAI + Anthropic + Google alone add up to far more than that.</p>
+
+  <div class="mentor" style="--cat:var(--econ)">
+    <span class="tag" style="color:var(--econ)">Google's move</span>
+    <p>Google is already public, profitable and has many income sources. So why announce the largest stock sale in its history (up to $85B; ~$45B already closed)? Analysts (Gil Luria, DA Davidson) read it this way: <strong>get in first to capture the capital before</strong> SpaceX, Anthropic and OpenAI absorb it — benefiting from the boom while hedging against it ("if AI disappoints, we've still got YouTube"). <em>That's the market's interpretation, not Google's official reason</em>, which is funding infrastructure.</p>
+  </div>
+
+  <div class="alert" style="--cat:var(--econ)">
+    <span class="tag">Why this is the most delicate moment</span>
+    A <em>bubble</em> doesn't burst because the technology is fake, but when <strong>the cost of keeping it inflated exceeds confidence</strong>. Until now AI rose on belief; now it asks for <strong>hundreds of billions in cash all at once</strong>. If investors hesitate — "too expensive, I'll wait six months" — confidence cools. It's not saying AI is worthless; it's saying "not at that price, not yet."
+  </div>
+
+  <div class="src">
+    <span class="lab">Sources</span>
+    <a href="https://www.cnbc.com/2026/06/05/alphabet-ai-data-center-financing.html" target="_blank" rel="noopener">CNBC — Alphabet's ~$85B offering</a> ·
+    <a href="https://www.cnbc.com/2026/06/12/spacex-stock-jumps-2-trillion.html" target="_blank" rel="noopener">CNBC — SpaceX record IPO</a> ·
+    <a href="https://fortune.com/2026/06/01/anthropic-confidentially-files-ipo-965-billion-valuation/" target="_blank" rel="noopener">Fortune — Anthropic's S-1 ($965B)</a>
+  </div>
+</section>
+
+<!-- ================= TAKEAWAYS ================= -->
+<section id="conclusion" style="--cat:var(--accent)">
+  <div class="k">Synthesis</div>
+  <h2>What to measure before deciding</h2>
+  <p class="sec-intro">The question isn't "is AI useful?" but "do we know its real cost?". After separating the documented from the exaggerated, three firm truths remain:</p>
+  <div class="grid3">
+    <div class="card" style="--cat:var(--energy)"><h4>1 · The physical cost is real and growing</h4><p>Water, electricity (415→945 TWh), e-waste and land are well documented by the IEA, AI2, LBNL and UNITAR. It's not alarmism: it's measurement.</p></div>
+    <div class="card" style="--cat:var(--accent)"><h4>2 · Jevons rules</h4><p>Every efficiency gain is swallowed — and exceeded — by more usage. Absolute consumption rises even as cost per token falls.</p></div>
+    <div class="card" style="--cat:var(--econ)"><h4>3 · The economics aren't settled</h4><p>Low margins and huge burn — but record capital, not collapse. It's an open bet, not an announced bankruptcy.</p></div>
+  </div>
+  <div class="keystone" style="margin-top:1.6rem">
+    If we don't measure the <b>physical</b> and <b>financial</b> cost with real data — not made-up figures — we won't know whether the result is worth the resource. That's the only honest conclusion.
+  </div>
+</section>
+
+<!-- ================= SOURCES ================= -->
+<section id="fuentes" class="band" style="--cat:var(--accent)">
+  <div class="k">📚 To dig deeper</div>
+  <h2>Verifiable sources</h2>
+  <p class="sec-intro">Every figure in this presentation was checked against primary sources. Illustrative estimates are marked as such; everything else links its direct source.</p>
+
+  <div class="src-cat" style="--cat:var(--water)">
+    <h3>💧 Water</h3>
+    <div class="src-item"><a href="https://arxiv.org/abs/2503.05804" target="_blank" rel="noopener">Morrison et al. — Holistically Evaluating the Environmental Impact of Creating Language Models (AI2, ICLR 2025)</a><p>Origin of the 2.77M L + 493 t CO₂ (whole OLMo series).</p></div>
+    <div class="src-item"><a href="https://arxiv.org/abs/2304.03271" target="_blank" rel="noopener">Ren et al. — Making AI Less Thirsty (UC Riverside)</a><p>~0.5 L of water per ~100-word answer.</p></div>
+    <div class="src-item"><a href="https://www.tomshardware.com/tech-industry/most-new-us-ai-data-centers-are-going-up-on-drought-land" target="_blank" rel="noopener">Tom's Hardware / Guardian–NOAA analysis</a><p>~2 in 3 new US data centers in drought areas.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--energy)">
+    <h3>⚡ Electricity & CO₂</h3>
+    <div class="src-item"><a href="https://doi.org/10.3389/fcomm.2025.1572947" target="_blank" rel="noopener">Dauner & Socher — Energy costs of communicating with AI (Frontiers, 2025)</a><p>27.7 g (Qwen-7B) vs ≈2 kg CO₂ (DeepSeek-R1 70B) per question.</p></div>
+    <div class="src-item"><a href="https://www.iea.org/reports/energy-and-ai/executive-summary" target="_blank" rel="noopener">IEA — Energy and AI (2025)</a><p>415 TWh (2024) → ~945 TWh (2030); AI as the main driver.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--ewaste)">
+    <h3>🖥️ Hardware & e-waste</h3>
+    <div class="src-item"><a href="https://www.itu.int/pub/D-GEN-E_WASTE.01-2024" target="_blank" rel="noopener">Global E-Waste Monitor 2024 (UNITAR / ITU)</a><p>62 Mt in 2022, 22.3% recycled, $91B in contained metals.</p></div>
+    <div class="src-item"><a href="https://cen.acs.org/environment/recycling/Electronic-waste-gold-mine-waiting/102/i23" target="_blank" rel="noopener">C&EN — Electronic waste: a gold mine waiting</a><p>Metal content in PCBs and concentration (~10× vs ore).</p></div>
+    <div class="src-item"><a href="https://spectrum.ieee.org/data-center-sustainability-metrics" target="_blank" rel="noopener">IEEE Spectrum — data-center sustainability metrics</a><p>Context on hardware replacement cycles in data centers.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--space)">
+    <h3>🏭 Land & power grid</h3>
+    <div class="src-item"><a href="https://arxiv.org/abs/2602.02529" target="_blank" rel="noopener">Janosov (2026) — Feasibility Analysis of US Hyperscale Siting</a><p>Feasible capacity "in the tens of GW, not hundreds".</p></div>
+    <div class="src-item"><a href="https://eta-publications.lbl.gov/sites/default/files/2024-12/lbnl-2024-united-states-data-center-energy-usage-report_1.pdf" target="_blank" rel="noopener">LBNL — US Data Center Energy Usage Report (2024)</a><p>176 TWh = 4.4% of US electricity (2023); 325–580 TWh by 2028.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--green)">
+    <h3>🌍 Europe & Japan</h3>
+    <div class="src-item"><a href="https://www.irishtimes.com/environment/2025/06/10/data-centres-accounted-for-more-than-fifth-of-irelands-electricity-usage-last-year/" target="_blank" rel="noopener">Irish Times / CSO — data centers = 22% of Ireland's electricity (2024)</a><p>Projected to ~30% by 2032; Europe's most extreme case.</p></div>
+    <div class="src-item"><a href="https://www.woodmac.com/press-releases/japan-data-centers-power-demand/" target="_blank" rel="noopener">Wood Mackenzie — Japan data-center power demand</a><p>Triples to 57–66 TWh by 2034; 40%+ of new power from coal and gas.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--cool)">
+    <h3>❄️ Cooling</h3>
+    <div class="src-item"><a href="https://intelligence.uptimeinstitute.com/sites/default/files/2025-07/UI%20Field%20181_Data%20center%20cooling.pdf" target="_blank" rel="noopener">Uptime Institute — Cooling Survey 2025</a><p>Industry-average PUE 1.54 (flat since 2019); liquid achieves &lt;1.2.</p></div>
+    <div class="src-item"><a href="https://www.investing.com/news/stock-market-news/google-in-talks-with-chinas-envicool-others-to-buy-data-centre-cooling-systems-sources-say-4564643" target="_blank" rel="noopener">Reuters — Google & Envicool; JPMorgan market</a><p>Western leaders (Vertiv, Schneider, CoolIT); AI-server market $8.9 → $17 billion.</p></div>
+    <div class="src-item"><a href="https://www.chinadaily.com.cn/a/202604/09/WS69d76a88a310d6866eb428b3.html" target="_blank" rel="noopener">China Daily — Haier AIDC solution</a><p>Active magnetic bearings; up to 70% less space, PUE &lt;1.2.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--econ)">
+    <h3>💰 Economics</h3>
+    <div class="src-item"><a href="https://sacra.com/research/openai/" target="_blank" rel="noopener">Sacra — OpenAI research</a><p>Gross margin ~33%; compute ~$8.4B (2025).</p></div>
+    <div class="src-item"><a href="https://fortune.com/2026/06/09/openai-files-confidential-s-1-sec-ipo/" target="_blank" rel="noopener">Fortune — OpenAI files confidential S-1</a><p>Pre-IPO registration with the SEC (~June 2026).</p></div>
+    <div class="src-item"><a href="https://pitchbook.com/news/articles/q1-2026-ai-funding-blows-past-2025-total-with-three-deals-accounting-for-67-of-capital" target="_blank" rel="noopener">PitchBook — AI funding Q1 2026</a><p>~$255B in one quarter, all-time record (debunks the "45% drop").</p></div>
+    <div class="src-item"><a href="https://www.bloomberg.com/news/articles/2025-03-20/ai-pioneer-sees-handful-of-models-surviving-us-china-shakeout" target="_blank" rel="noopener">Bloomberg — Kai-Fu Lee on OpenAI's sustainability (Mar 2025)</a><p>Origin of the quote; note: it's from March 2025, not 2026.</p></div>
+    <div class="src-item"><a href="https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems" target="_blank" rel="noopener">Nvidia — partnership with OpenAI (up to $100B, 10 GW)</a><p>One of the deals in the "AI Money Machine" chart; also OpenAI–AMD (6 GW) and OpenAI–Oracle ($300B).</p></div>
+    <div class="src-item"><a href="https://www.business-standard.com/companies/news/nvidia-openai-deal-sparks-concerns-over-circular-financing-in-ai-boom-125092401589_1.html" target="_blank" rel="noopener">Business Standard / Bernstein — the "circular financing" concern</a><p>Why analysts compare these cross-flows to dot-com-era vendor financing.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--econ)">
+    <h3>🇨🇳 China</h3>
+    <div class="src-item"><a href="https://api-docs.deepseek.com/quick_start/pricing" target="_blank" rel="noopener">DeepSeek — official API pricing</a><p>Basis for the price comparison; budget tier up to ~80× cheaper than a US flagship.</p></div>
+    <div class="src-item"><a href="https://newsletter.semianalysis.com/p/deepseek-debates" target="_blank" rel="noopener">SemiAnalysis — DeepSeek debates</a><p>The "$5.6M training" is only one run's compute; total infrastructure ~$1.6 billion. Independent analysis.</p></div>
+    <div class="src-item"><a href="https://hai.stanford.edu/ai-index/2025-ai-index-report" target="_blank" rel="noopener">Stanford HAI — AI Index</a><p>Inference cost (GPT-3.5 class) fell ~280× in 18 months; a global trend, not just China's.</p></div>
+    <div class="src-item"><a href="https://www.cnbc.com/2026/05/13/alibaba-earnings-march-quarter-ai-cloud-growth.html" target="_blank" rel="noopener">CNBC — Alibaba earnings</a><p>Operating profit (EBITA) −84%, partly from acquiring users for Qwen. From an SEC filing.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--econ)">
+    <h3>⚖️ Communities, laws & power</h3>
+    <div class="src-item"><a href="https://stateline.org/2026/03/06/temporarily-banning-data-centers-draws-more-interest-from-state-local-officials/" target="_blank" rel="noopener">Stateline — state moratoriums and laws on data centers</a><p>~267 bills across 40+ states (2025); local moratoriums. Counts via MultiState/NCSL.</p></div>
+    <div class="src-item"><a href="https://earthjustice.org/press/2026/xai-sued-for-illegal-power-plant" target="_blank" rel="noopener">Earthjustice / NAACP — xAI's gas turbines in Memphis</a><p>EPA found Clean Air Act violations (Jan 2026); April 2026 lawsuit.</p></div>
+    <div class="src-item"><a href="https://www.constellationenergy.com/news/2025/09/one-year-later-crane-clean-energy-center-still-in-the-spotlight-and-ahead-of-schedule.html" target="_blank" rel="noopener">Constellation — Three Mile Island restart (835 MW)</a><p>2027 target, pending NRC approval. Big Tech signed 10+ GW of nuclear; ~0 GW delivered by mid-2026.</p></div>
+  </div>
+
+  <div class="src-cat" style="--cat:var(--econ)">
+    <h3>📈 Markets & IPOs (2026)</h3>
+    <div class="src-item"><a href="https://www.cnbc.com/2026/06/05/alphabet-ai-data-center-financing.html" target="_blank" rel="noopener">CNBC — Alphabet raises ~$85B in stock</a><p>Announced up to ~$85B, but only ~$45B closed so far (the rest is a gradual ATM, partly for employee taxes). The "getting ahead" read is from analyst Gil Luria (DA Davidson), not Google.</p></div>
+    <div class="src-item"><a href="https://www.cnbc.com/2026/06/12/spacex-stock-jumps-2-trillion.html" target="_blank" rel="noopener">CNBC — SpaceX record IPO</a><p>$75B raised, ~$2.1T cap; SpaceX merged with xAI in Feb 2026.</p></div>
+    <div class="src-item"><a href="https://fortune.com/2026/06/01/anthropic-confidentially-files-ipo-965-billion-valuation/" target="_blank" rel="noopener">Fortune — Anthropic files S-1 ($965B)</a><p>OpenAI filed June 8 (~$852B). Record IPO year (2021): ~$142B.</p></div>
+  </div>
+
+  <details>
+    <summary>How these figures were verified</summary>
+    <div class="body">
+      <p>Each figure was checked against primary sources (IEA, Allen Institute for AI, Lawrence Berkeley Lab, UNITAR/ITU, Sacra, PitchBook, Reuters, Uptime Institute). Criteria:</p>
+      <ul>
+        <li><strong>Verified figure</strong> → its direct source is cited.</li>
+        <li><strong>Illustrative estimate</strong> (e.g. tokens per task, liters per conversation) → marked as such.</li>
+        <li><strong>Figure with no credible backing</strong> → not included.</li>
+      </ul>
+      <p>2026 financial figures come partly from a confidential S-1 and from press reporting, not audited statements — treat them as <em>reported estimates</em>.</p>
+    </div>
+  </details>
+</section>
+
+<footer>
+  A verifiable presentation on the physical and financial cost of AI · figures checked against primary sources, Jun 2026 · printable and downloadable (a single HTML file).
+</footer>
+
+</div><!-- /wrap -->
+
+<!-- ================= PALETTE SWITCHER ================= -->
+<button class="pal-fab" id="palToggle">🎨 Theme</button>
+<div class="pal-panel" id="palPanel" hidden>
+  <h5>Palette</h5>
+  <div id="palBtns"></div>
+  <h5>Typeface</h5>
+  <div id="palFonts"></div>
+  <div class="pal-row">
+    <button id="palCopy">Copy CSS tokens</button>
+    <button id="palShare">Copy link</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SECTION: progress + scroll-spy (aria-current)
+   ============================================================ */
+addEventListener('scroll',()=>{const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;document.getElementById('prog').style.width=p+'%';},{passive:true});
+const navLinks=[...document.querySelectorAll('.topbar a:not(.src-cta):not(.lang)')];
+const spy=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){const id=en.target.id;navLinks.forEach(a=>a.setAttribute('aria-current',a.getAttribute('href')==='#'+id?'true':'false'));}});},{rootMargin:'-40% 0px -55% 0px'});
+document.querySelectorAll('section[id]').forEach(s=>spy.observe(s));
+
+/* ============================================================
+   SECTION: palette + font switcher (surfaces + --accent; the
+   semantic categories water/energy/etc. are NOT touched)
+   ============================================================ */
+const PALETTES={
+  'Slate minimal':    {'--bg':'#FFFFFF','--bg-2':'#F8FAFC','--band':'#F1F5F9','--card-2':'#FCFDFE','--line':'#E2E8F0','--ink':'#0F172A','--body':'#334155','--muted':'#64748B','--accent':'#0EA5E9','--accent-soft':'#E0F2FE'},
+  'Warm cream':       {'--bg':'#FBF7F0','--bg-2':'#F3EEE4','--band':'#EFE6D2','--card-2':'#F7F2EA','--line':'#E2DACB','--ink':'#16212B','--body':'#33424E','--muted':'#6A7782','--accent':'#1C6E66','--accent-soft':'#DCEDEA'},
+  'Cool neutral':     {'--bg':'#FBFCFD','--bg-2':'#F1F4F7','--band':'#E9EEF3','--card-2':'#F7F9FB','--line':'#DCE3EA','--ink':'#16212B','--body':'#33424E','--muted':'#6A7782','--accent':'#0EA5E9','--accent-soft':'#E0F2FE'},
+  'Slate blue':       {'--bg':'#F7FAFD','--bg-2':'#EDF3F9','--band':'#E6EFF7','--card-2':'#F3F8FC','--line':'#D5E2EE','--ink':'#10243A','--body':'#33485E','--muted':'#647C92','--accent':'#2A5C9E','--accent-soft':'#E2ECF7'},
+  'Professional ocean':{'--bg':'#F8FAFC','--bg-2':'#EEF2F6','--band':'#E7EDF3','--card-2':'#F4F7FA','--line':'#CBD5E1','--ink':'#0F172A','--body':'#334155','--muted':'#64748B','--accent':'#0F766E','--accent-soft':'#D8F0EC'},
+};
+const FONTS={
+  'Editorial':    {'--display':'"Barlow Condensed",Impact,sans-serif','--font':'"Lora",Georgia,serif','--mono':'"JetBrains Mono",ui-monospace,monospace',url:'',desc:'Barlow Condensed headings · Lora body — warm serif, magazine feel'},
+  'Classic serif':{'--display':'"Fraunces",Georgia,serif','--font':'"Plus Jakarta Sans",system-ui,sans-serif','--mono':'"JetBrains Mono",ui-monospace,monospace',url:'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',desc:'Fraunces headings · Plus Jakarta body'},
+  'Clean sans':   {'--display':'"Inter",system-ui,sans-serif','--font':'"Inter",system-ui,sans-serif','--mono':'"JetBrains Mono",ui-monospace,monospace',url:'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',desc:'Inter for headings and body'},
+  'Modern':       {'--display':'"Space Grotesk",system-ui,sans-serif','--font':'"Inter",system-ui,sans-serif','--mono':'"JetBrains Mono",ui-monospace,monospace',url:'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap',desc:'Space Grotesk · Inter'},
+  'Broadsheet':   {'--display':'"Fraunces",Georgia,serif','--font':'"Source Serif 4",Georgia,serif','--mono':'"JetBrains Mono",ui-monospace,monospace',url:'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap',desc:'Fraunces · Source Serif (serif)'},
+};
+(function(){
+  const root=document.documentElement,palBtns=document.getElementById('palBtns'),fontBtns=document.getElementById('palFonts');
+  let curPal='Slate minimal',curFont='Editorial';const injected=new Set();
+  function injectFont(u){if(!u||injected.has(u))return;injected.add(u);const l=document.createElement('link');l.rel='stylesheet';l.href=u;document.head.appendChild(l);}
+  function applyPal(n){const p=PALETTES[n];if(!p)return;for(const k in p)root.style.setProperty(k,p[k]);curPal=n;[...palBtns.children].forEach(b=>b.classList.toggle('on',b.dataset.n===n));}
+  function applyFont(n){const f=FONTS[n];if(!f)return;injectFont(f.url);root.style.setProperty('--display',f['--display']);root.style.setProperty('--font',f['--font']);root.style.setProperty('--mono',f['--mono']);curFont=n;[...fontBtns.children].forEach(b=>b.classList.toggle('on',b.dataset.n===n));}
+  function persist(){try{localStorage.setItem('aicost-look',curPal+'|'+curFont);}catch(e){}}
+  Object.keys(PALETTES).forEach(n=>{const p=PALETTES[n];const b=document.createElement('button');b.className='pal-opt';b.dataset.n=n;b.innerHTML=n+'<span class="pal-sw"><i style="background:'+p['--bg']+'"></i><i style="background:'+p['--accent']+'"></i><i style="background:'+p['--ink']+'"></i></span>';b.onclick=()=>{applyPal(n);persist();};palBtns.appendChild(b);});
+  Object.keys(FONTS).forEach(n=>{const f=FONTS[n];const b=document.createElement('button');b.className='pal-opt';b.dataset.n=n;b.innerHTML=n+'<small>'+f.desc+'</small>';b.onclick=()=>{applyFont(n);persist();};fontBtns.appendChild(b);});
+  document.getElementById('palToggle').onclick=()=>{const pp=document.getElementById('palPanel');pp.hidden=!pp.hidden;};
+  function flash(id,m){const b=document.getElementById(id),o=b.textContent;b.textContent=m;setTimeout(()=>b.textContent=o,1500);}
+  document.getElementById('palCopy').onclick=()=>{const p=PALETTES[curPal],f=FONTS[curFont];let css=':root{\n';for(const k in p)css+='  '+k+': '+p[k]+';\n';['--display','--font','--mono'].forEach(k=>css+='  '+k+': '+f[k]+';\n');css+='}';navigator.clipboard&&navigator.clipboard.writeText(css);flash('palCopy','✓ Copied');};
+  document.getElementById('palShare').onclick=()=>{const url=location.origin+location.pathname+'#look='+encodeURIComponent(curPal+'|'+curFont);navigator.clipboard&&navigator.clipboard.writeText(url);flash('palShare','✓ Link copied');};
+  let saved='';const m=location.hash.match(/look=([^&]+)/);if(m){try{saved=decodeURIComponent(m[1]);}catch(e){}}
+  if(!saved){try{saved=localStorage.getItem('aicost-look')||'';}catch(e){}}
+  const [sp,sf]=saved.split('|');
+  applyPal(PALETTES[sp]?sp:'Slate minimal');applyFont(FONTS[sf]?sf:'Editorial');
+})();
+</script>
+</body>
+</html>

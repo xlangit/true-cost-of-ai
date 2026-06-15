@@ -1,0 +1,10 @@
+# Not for publication
+assets/img/ai-money-machine.jpg
+assets/img/ai-money-machine-original.png
+index-tabs-backup.html
+style.css
+script.js
+
+# OS / editor
+.DS_Store
+.claude/
